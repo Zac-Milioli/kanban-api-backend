@@ -3,7 +3,7 @@
 from datetime import datetime
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
-from db.database import activity_database
+from db.database import activity_database, client_database
 from src.schemas.activity_schema import ActivitySchema, ActivityDB
 
 router = APIRouter(prefix="/activity", tags=['Activity'])
@@ -25,6 +25,10 @@ def get_activity(activity_id: int | None = None):
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ActivityDB)
 def post_activity(q: ActivitySchema):
     "Salvar activity"
+    client_id = q.model_dump()['client_id']
+    if client_id < len(client_database)-1 or client_id < 1:
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
+
     register = ActivityDB(
         id=len(activity_database)+1, created_at=datetime.now(),
         updated_at=datetime.now(), **q.model_dump()
@@ -35,6 +39,9 @@ def post_activity(q: ActivitySchema):
 @router.put("/{id}", status_code=HTTPStatus.OK, response_model=ActivityDB)
 def put_activity(activity_id: int, q: ActivitySchema):
     "Modificar activity"
+    client_id = q.model_dump()['client_id']
+    if client_id < len(client_database)-1 or client_id < 1:
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
     if len(activity_database) < activity_id-1 or activity_id < 1:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="id not found")
 

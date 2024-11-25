@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict
 class ActivitySchema(BaseModel):
     "Formato de entrada de activity"
     name: str
+    client_id: int
     description: str | None = None
     status: str | None = None
     model_config = ConfigDict(from_attributes=True)
