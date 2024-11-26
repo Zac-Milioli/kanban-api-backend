@@ -4,15 +4,15 @@ from datetime import datetime
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
 from src.schemas.client_schema import ClientDB, ClientSchema
-from db.database import client_database
+from db.database import client_database, project_database
 
 router = APIRouter(prefix="/client", tags=['Client'])
 
-@router.get("/", status_code=HTTPStatus.OK, response_model=list[ClientDB])
+@router.get("/", status_code=HTTPStatus.OK, response_model=list[ClientDB] | ClientDB)
 def get_client(client_id: int | None = None):
     "Buscar client ou lista de client"
     if client_id:
-        if len(client_database) < client_id-1 or client_id < 1:
+        if len(client_database) < client_id or client_id < 1:
             raise HTTPException(
                 HTTPStatus.NOT_FOUND, detail=f"client of id {client_id} not found"
                 )
@@ -25,6 +25,9 @@ def get_client(client_id: int | None = None):
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ClientDB)
 def post_client(q: ClientSchema):
     "Salvar client"
+    project_id = q.model_dump()['project_id']
+    if project_id > len(project_database) or project_id < 1:
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
     register = ClientDB(
         id=len(client_database)+1, created_at=datetime.now(),
         updated_at=datetime.now(), **q.model_dump()
@@ -35,7 +38,10 @@ def post_client(q: ClientSchema):
 @router.put("/{id}", status_code=HTTPStatus.OK, response_model=ClientDB)
 def put_client(client_id: int, q: ClientSchema):
     "Modificar client"
-    if len(client_database) < client_id-1 or client_id < 1:
+    project_id = q.model_dump()['project_id']
+    if project_id > len(project_database) or project_id < 1:
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
+    if len(client_database) < client_id or client_id < 1:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="id not found")
 
     client = client_database[client_id - 1].model_dump()
@@ -50,7 +56,7 @@ def put_client(client_id: int, q: ClientSchema):
 @router.delete("/", status_code=HTTPStatus.OK)
 def delete_client(client_id: int):
     "Excluir client"
-    if len(client_database) < client_id-1 or client_id < 1:
+    if len(client_database) < client_id or client_id < 1:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="id not found")
 
     client = client_database.pop(client_id - 1)

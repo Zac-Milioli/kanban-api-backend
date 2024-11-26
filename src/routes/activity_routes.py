@@ -8,11 +8,11 @@ from src.schemas.activity_schema import ActivitySchema, ActivityDB
 
 router = APIRouter(prefix="/activity", tags=['Activity'])
 
-@router.get("/", status_code=HTTPStatus.OK, response_model=list[ActivityDB])
+@router.get("/", status_code=HTTPStatus.OK, response_model=list[ActivityDB] | ActivityDB)
 def get_activity(activity_id: int | None = None):
     "Buscar activity ou lista de activity"
     if activity_id:
-        if len(activity_database) < activity_id-1 or activity_id < 1:
+        if len(activity_database) < activity_id or activity_id < 1:
             raise HTTPException(
                 HTTPStatus.NOT_FOUND, detail=f"Activity of id {activity_id} not found"
                 )
@@ -26,7 +26,7 @@ def get_activity(activity_id: int | None = None):
 def post_activity(q: ActivitySchema):
     "Salvar activity"
     client_id = q.model_dump()['client_id']
-    if client_id < len(client_database)-1 or client_id < 1:
+    if client_id > len(client_database) or client_id < 1:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
 
     register = ActivityDB(
@@ -40,9 +40,9 @@ def post_activity(q: ActivitySchema):
 def put_activity(activity_id: int, q: ActivitySchema):
     "Modificar activity"
     client_id = q.model_dump()['client_id']
-    if client_id < len(client_database)-1 or client_id < 1:
+    if client_id > len(client_database) or client_id < 1:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
-    if len(activity_database) < activity_id-1 or activity_id < 1:
+    if len(activity_database) < activity_id or activity_id < 1:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="id not found")
 
     activity = activity_database[activity_id - 1].model_dump()
@@ -57,7 +57,7 @@ def put_activity(activity_id: int, q: ActivitySchema):
 @router.delete("/", status_code=HTTPStatus.OK)
 def delete_activity(activity_id: int):
     "Excluir activity"
-    if len(activity_database) < activity_id-1 or activity_id < 1:
+    if len(activity_database) < activity_id or activity_id < 1:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="id not found")
 
     activity = activity_database.pop(activity_id - 1)

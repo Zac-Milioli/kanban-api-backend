@@ -2,3 +2,4 @@
 
 activity_database = []
 client_database = []
+project_database = []
