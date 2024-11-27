@@ -10,8 +10,6 @@ from main import app
 @pytest.fixture()
 def client():
     "Retorna o cliente de testes"
-    # with TestClient(app=app) as test_client:
-    #     yield test_client
     return TestClient(app=app)
 
 @pytest.fixture()
@@ -19,6 +17,7 @@ def project():
     "Cria e retorna um project diretamente no banco"
     project_db = ProjectDB(
         name="testProject",
+        status="testStatus",
         id=len(project_database)+1,
         created_at=datetime.now(),
         updated_at=datetime.now()

@@ -32,7 +32,7 @@ def post_project(q: ProjectSchema):
     project_database.append(register)
     return register
 
-@router.put("/{id}", status_code=HTTPStatus.OK, response_model=ProjectDB)
+@router.put("/{project_id}", status_code=HTTPStatus.OK, response_model=ProjectDB)
 def put_project(project_id: int, q: ProjectSchema):
     "Modificar project"
     if project_id > len(project_database) or project_id < 1:
@@ -47,7 +47,7 @@ def put_project(project_id: int, q: ProjectSchema):
     project_database[project_id - 1] = registry
     return registry
 
-@router.delete("/", status_code=HTTPStatus.OK)
+@router.delete("/{project_id}", status_code=HTTPStatus.OK)
 def delete_project(project_id: int):
     "Excluir project"
     if len(project_database) < project_id or project_id < 1:

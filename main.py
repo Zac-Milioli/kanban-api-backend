@@ -2,6 +2,7 @@
 
 from http import HTTPStatus
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from src.routes.activity_routes import router as activity_router
 from src.routes.client_routes import router as client_router
@@ -23,5 +24,18 @@ app.include_router(project_router)
 app.include_router(client_router)
 app.include_router(activity_router)
 
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:8080"
+]
+
 if __name__ == "__main__":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_headers=["*"],
+    )
     uvicorn.run(app=app, host="0.0.0.0", port=8000)

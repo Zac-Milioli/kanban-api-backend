@@ -9,7 +9,8 @@ class TestProject:
     def test_create_project(self, client: TestClient):
         "Testa a criação de um project"
         project = {
-            "name": "testProject"
+            "name": "testProject",
+            "status": "testStatus"
         }
         response = client.post("/project", json=project).json()
         assert response.get("name") == project.get("name")

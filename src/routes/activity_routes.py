@@ -36,7 +36,7 @@ def post_activity(q: ActivitySchema):
     activity_database.append(register)
     return register
 
-@router.put("/{id}", status_code=HTTPStatus.OK, response_model=ActivityDB)
+@router.put("/{activity_id}", status_code=HTTPStatus.OK, response_model=ActivityDB)
 def put_activity(activity_id: int, q: ActivitySchema):
     "Modificar activity"
     client_id = q.model_dump()['client_id']
@@ -54,7 +54,7 @@ def put_activity(activity_id: int, q: ActivitySchema):
     activity_database[activity_id - 1] = registry
     return registry
 
-@router.delete("/", status_code=HTTPStatus.OK)
+@router.delete("/{activity_id}", status_code=HTTPStatus.OK)
 def delete_activity(activity_id: int):
     "Excluir activity"
     if len(activity_database) < activity_id or activity_id < 1:

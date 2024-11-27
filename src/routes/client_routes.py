@@ -35,7 +35,7 @@ def post_client(q: ClientSchema):
     client_database.append(register)
     return register
 
-@router.put("/{id}", status_code=HTTPStatus.OK, response_model=ClientDB)
+@router.put("/{client_id}", status_code=HTTPStatus.OK, response_model=ClientDB)
 def put_client(client_id: int, q: ClientSchema):
     "Modificar client"
     project_id = q.model_dump()['project_id']
@@ -53,7 +53,7 @@ def put_client(client_id: int, q: ClientSchema):
     client_database[client_id - 1] = registry
     return registry
 
-@router.delete("/", status_code=HTTPStatus.OK)
+@router.delete("/{client_id}", status_code=HTTPStatus.OK)
 def delete_client(client_id: int):
     "Excluir client"
     if len(client_database) < client_id or client_id < 1:
