@@ -9,7 +9,7 @@ from db.database import client_database, project_database
 router = APIRouter(prefix="/client", tags=['Client'])
 
 @router.get("/", status_code=HTTPStatus.OK, response_model=list[ClientDB] | ClientDB)
-def get_client(client_id: int | None = None):
+def get_client(client_id: int | None = None, project_id: int | None = None):
     "Buscar client ou lista de client"
     if client_id:
         if client_id not in client_database:
@@ -17,6 +17,12 @@ def get_client(client_id: int | None = None):
                 HTTPStatus.NOT_FOUND, detail=f"client of id {client_id} not found"
                 )
         return client_database[client_id]
+    if project_id:
+        if project_id not in project_database:
+            raise HTTPException(
+                HTTPStatus.NOT_FOUND, detail=f"project of id {project_id} not found"
+                )
+        return [client for client in client_database.values() if client.project_id == project_id]
     return list(client_database.values())
 
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ClientDB)
