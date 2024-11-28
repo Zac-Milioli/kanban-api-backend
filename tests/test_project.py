@@ -3,6 +3,7 @@
 from fastapi.testclient import TestClient
 from src.schemas.project_schema import ProjectDB
 from db.database import project_database
+import pytest
 
 class TestProject:
     "Objeto de testes para project"

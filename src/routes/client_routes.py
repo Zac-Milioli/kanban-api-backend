@@ -12,52 +12,52 @@ router = APIRouter(prefix="/client", tags=['Client'])
 def get_client(client_id: int | None = None):
     "Buscar client ou lista de client"
     if client_id:
-        if len(client_database) < client_id or client_id < 1:
+        if client_id not in client_database:
             raise HTTPException(
                 HTTPStatus.NOT_FOUND, detail=f"client of id {client_id} not found"
                 )
-
-        found_client = client_database[client_id - 1]
-        return found_client
-
-    return client_database
+        return client_database[client_id]
+    return list(client_database.values())
 
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ClientDB)
 def post_client(q: ClientSchema):
     "Salvar client"
     project_id = q.model_dump()['project_id']
-    if project_id > len(project_database) or project_id < 1:
+    if project_id not in project_database:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
+    if len(client_database) == 0:
+        new_id = 1
+    else:
+        new_id = max(client_database)+1
     register = ClientDB(
-        id=len(client_database)+1, created_at=datetime.now(),
+        id=new_id, created_at=datetime.now(),
         updated_at=datetime.now(), **q.model_dump()
         )
-    client_database.append(register)
+    client_database[new_id] = register
     return register
 
 @router.put("/{client_id}", status_code=HTTPStatus.OK, response_model=ClientDB)
 def put_client(client_id: int, q: ClientSchema):
     "Modificar client"
     project_id = q.model_dump()['project_id']
-    if project_id > len(project_database) or project_id < 1:
+    if project_id not in project_database:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
-    if len(client_database) < client_id or client_id < 1:
+    if client_id not in client_database:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="id not found")
 
-    client = client_database[client_id - 1].model_dump()
+    client = client_database[client_id].model_dump()
     registry = ClientDB(
         id=client_id, created_at=client['created_at'],
         updated_at=datetime.now(), **q.model_dump()
         )
-
-    client_database[client_id - 1] = registry
+    client_database[client_id] = registry
     return registry
 
 @router.delete("/{client_id}", status_code=HTTPStatus.OK)
 def delete_client(client_id: int):
     "Excluir client"
-    if len(client_database) < client_id or client_id < 1:
+    if client_id not in client_database:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="id not found")
-
-    client = client_database.pop(client_id - 1)
+    client = client_database[client_id]
+    del client_database[client_id]
     return client

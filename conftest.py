@@ -18,9 +18,10 @@ def project():
     project_db = ProjectDB(
         name="testProject",
         status="testStatus",
-        id=len(project_database)+1,
+        id=1,
         created_at=datetime.now(),
         updated_at=datetime.now()
         )
-    project_database.append(project_db)
-    return project_db
+    project_database[1] = project_db
+    yield project_db
+    del project_database[1]
