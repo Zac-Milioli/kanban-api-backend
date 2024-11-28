@@ -22,7 +22,11 @@ def get_client(client_id: int | None = None, project_id: int | None = None):
             raise HTTPException(
                 HTTPStatus.NOT_FOUND, detail=f"project of id {project_id} not found"
                 )
-        return [client for client in client_database.values() if client.project_id == project_id]
+        return [
+            client
+            for client in client_database.values()
+            if client.project_id == project_id
+            ]
     return list(client_database.values())
 
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ClientDB)

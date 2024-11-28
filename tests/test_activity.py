@@ -4,6 +4,7 @@ from http import HTTPStatus
 from fastapi.testclient import TestClient
 from src.schemas.activity_schema import ActivityDB
 from src.schemas.client_schema import ClientDB
+from src.schemas.project_schema import ProjectDB
 
 class TestActivity:
     "Objeto de testes para activity"
@@ -44,6 +45,18 @@ class TestActivity:
     def test_get_activity_from_client_not_found(self, client: TestClient):
         "Testa o retorno das activity de um client que não existe"
         response = client.get("/activity/", params={"client_id": -1})
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_get_activity_from_project(self, client: TestClient, activity: ActivityDB, project: ProjectDB):
+        "Testa o retorno das activity de um project"
+        response = client.get("/activity/", params={"project_id": project.id})
+        assert response.status_code == HTTPStatus.OK
+        assert isinstance(response.json(), list)
+        assert ActivityDB(**response.json()[0]) == activity
+
+    def test_get_activity_from_project_not_found(self, client: TestClient):
+        "Testa o retorno das activity de um client que não existe"
+        response = client.get("/activity/", params={"project_id": -1})
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_put_activity(self, client: TestClient, activity: ActivityDB):

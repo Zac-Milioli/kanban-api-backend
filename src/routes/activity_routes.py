@@ -3,13 +3,14 @@
 from datetime import datetime
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException
-from db.database import activity_database, client_database
+from db.database import activity_database, client_database, project_database
 from src.schemas.activity_schema import ActivitySchema, ActivityDB
 
 router = APIRouter(prefix="/activity", tags=['Activity'])
 
 @router.get("/", status_code=HTTPStatus.OK, response_model=list[ActivityDB] | ActivityDB)
-def get_activity(activity_id: int | None = None, client_id: int | None = None):
+def get_activity(activity_id: int | None = None, client_id: int | None = None,
+                    project_id: int | None = None):
     "Buscar activity ou lista de activity"
     if activity_id:
         if activity_id not in activity_database:
@@ -23,7 +24,26 @@ def get_activity(activity_id: int | None = None, client_id: int | None = None):
             raise HTTPException(
                 HTTPStatus.NOT_FOUND, detail=f"client of id {client_id} not found"
                 )
-        return [activity for activity in activity_database.values() if activity.client_id == client_id]
+        return [
+            activity
+            for activity in activity_database.values()
+            if activity.client_id == client_id
+            ]
+    if project_id:
+        if project_id not in project_database:
+            raise HTTPException(
+                HTTPStatus.NOT_FOUND, detail=f"project of id {client_id} not found"
+                )
+        client_ids = [
+            client.id
+            for client in client_database.values()
+            if client.project_id == project_id
+            ]
+        return [
+            activity
+            for activity in activity_database.values()
+            if activity.client_id in client_ids
+            ]
     return list(activity_database.values())
 
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ActivityDB)
