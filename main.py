@@ -18,7 +18,11 @@ app = FastAPI(title="Kanban Backend",
 @app.get("/getall", tags=["Get all data"], status_code=HTTPStatus.OK)
 def get_all():
     "Retorna o banco completo"
-    return {"Project": project_database, "Client": client_database, "Activity": activity_database}
+    return {
+            "Project": list(project_database.values()),
+            "Client": list(client_database.values()),
+            "Activity": list(activity_database.values())
+            }
 
 app.include_router(project_router)
 app.include_router(client_router)
