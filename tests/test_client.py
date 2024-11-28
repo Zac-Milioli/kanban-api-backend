@@ -10,7 +10,7 @@ class TestClientInstance:
     def test_create_client(self, client: TestClient, project: ProjectDB):
         "Testa a criação de um client"
         test_client = {
-            "name": "testclient",
+            "name": "testClient",
             "project_id": project.id
         }
         response = client.post("/client", json=test_client)
@@ -28,6 +28,11 @@ class TestClientInstance:
         response = client.get("/client/", params={"client_id": client_instance.id}).json()
         assert response.get("name") == client_instance.name
 
+    def test_get_specific_client_not_found(self, client: TestClient):
+        "Testa o retorno de um client que não existe"
+        response = client.get("/client/", params={"client_id": -1})
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
     def test_get_client_from_project(self, client: TestClient, client_instance: ClientDB):
         "Testa o retorno dos client de um project"
         response = client.get("/client/", params={"project_id": client_instance.project_id})
@@ -35,9 +40,9 @@ class TestClientInstance:
         assert isinstance(response.json(), list)
         assert ClientDB(**response.json()[0]) == client_instance
 
-    def test_get_specific_client_not_found(self, client: TestClient):
-        "Testa o retorno de um client que não existe"
-        response = client.get("/client/", params={"client_id": -1})
+    def test_get_client_from_project_not_found(self, client: TestClient):
+        "Testa o retorno dos client de um project que não existe"
+        response = client.get("/client/", params={"project_id": -1})
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_put_client(self, client: TestClient, client_instance: ClientDB):
