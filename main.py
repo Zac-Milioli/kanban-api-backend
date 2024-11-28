@@ -35,7 +35,7 @@ if __name__ == "__main__":
         CORSMiddleware,
         allow_origins=origins,
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_methods=["*"],
         allow_headers=["*"],
     )
     uvicorn.run(app=app, host="0.0.0.0", port=8000)

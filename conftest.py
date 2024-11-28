@@ -24,4 +24,5 @@ def project():
         )
     project_database[1] = project_db
     yield project_db
-    del project_database[1]
+    if project_database.get(1):
+        del project_database[1]
