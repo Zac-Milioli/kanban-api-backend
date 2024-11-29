@@ -48,6 +48,7 @@ def activity(client_instance: ClientDB):
     activity_db = ActivityDB(
         name="testActivity",
         client_id=client_instance.id,
+        status="testStatus",
         id=1,
         created_at=datetime.now(),
         updated_at=datetime.now()

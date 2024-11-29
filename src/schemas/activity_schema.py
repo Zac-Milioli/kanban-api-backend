@@ -8,7 +8,7 @@ class ActivitySchema(BaseModel):
     name: str
     client_id: int
     description: str | None = None
-    status: str | None = None
+    status: str
     model_config = ConfigDict(from_attributes=True)
 
 class ActivityDB(ActivitySchema):
