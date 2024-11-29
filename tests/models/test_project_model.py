@@ -1,7 +1,7 @@
 "Testes para ProjectModel"
 
-from datetime import datetime
 from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 from src.models.project_model import ProjectModel, table_registry
 
 class TestProjectModel:
@@ -11,6 +11,14 @@ class TestProjectModel:
         engine = create_engine('sqlite:///:memory:')
         table_registry.metadata.create_all(engine)
 
-        project_name = "testProjectModel"
-        project_model = ProjectModel(name=project_name, status="testStatus")
+        with Session(engine) as session:
+            project_name = "testProjectModel"
+            project_model = ProjectModel(name=project_name, status="testStatus")
+            
+            session.add(project_model)
+            session.commit()
+            session.refresh(project_model)
+        
         assert project_model.name == project_name
+        assert project_model.id
+        assert project_model.created_at
