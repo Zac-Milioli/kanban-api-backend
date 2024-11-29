@@ -1,4 +1,4 @@
-"Funções para testes"
+"Setup para testes"
 
 from datetime import datetime
 import pytest
@@ -9,7 +9,7 @@ from src.schemas.client_schema import ClientDB
 from src.schemas.activity_schema import ActivityDB
 from main import app
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def client():
     "Retorna o cliente de testes"
     return TestClient(app=app)
@@ -26,8 +26,7 @@ def project():
         )
     project_database[1] = project_db
     yield project_db
-    if project_database.get(1):
-        del project_database[1]
+    project_database.clear()
 
 @pytest.fixture()
 def client_instance(project: ProjectDB):
@@ -41,8 +40,7 @@ def client_instance(project: ProjectDB):
         )
     client_database[1] = client_db
     yield client_db
-    if client_database.get(1):
-        del client_database[1]
+    client_database.clear()
 
 @pytest.fixture()
 def activity(client_instance: ClientDB):
@@ -56,5 +54,4 @@ def activity(client_instance: ClientDB):
         )
     activity_database[1] = activity_db
     yield activity_db
-    if activity_database.get(1):
-        del activity_database[1]
+    activity_database.clear()

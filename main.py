@@ -34,7 +34,7 @@ origins = [
     "http://localhost:8080"
 ]
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,

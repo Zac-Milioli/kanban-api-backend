@@ -16,6 +16,16 @@ class TestProject:
         assert response.get("name") == project.get("name")
         assert response.get("status") == project.get("status")
 
+    def test_create_more_project(self, client: TestClient, project: ProjectDB):
+        "Testa a criação de um project novo"
+        new_project = {
+            "name": "testProject NEW",
+            "status": "testStatus NEW"
+        }
+        response = client.post("/project", json=new_project)
+        assert response.status_code == HTTPStatus.CREATED
+        assert response.json().get("id") == project.id+1
+
     def test_get_all_project(self, client: TestClient):
         "Testa o retorno dos project"
         response = client.get("/project").json()

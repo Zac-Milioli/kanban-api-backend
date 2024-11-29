@@ -20,6 +20,27 @@ class TestActivity:
         assert response.json().get("name") == test_activity.get("name")
         assert response.json().get("client_id") == client_instance.id
 
+    def test_create_activity_no_client(self, client: TestClient):
+        "Testa a criação de um activity sem um client"
+        test_activity = {
+            "name": "testClient",
+            "client_id": -1,
+            "status": "testStatus"
+        }
+        response = client.post("/activity", json=test_activity)
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_create_more_activity(self, client: TestClient, activity: ActivityDB):
+        "Testa a criação de um activity novo"
+        test_activity = {
+            "name": "testClient",
+            "client_id": activity.client_id,
+            "status": "testStatus"
+        }
+        response = client.post("/activity", json=test_activity)
+        assert response.status_code == HTTPStatus.CREATED
+        assert response.json().get("id") == activity.id+1
+
     def test_get_all_activity(self, client: TestClient):
         "Testa o retorno das activity"
         response = client.get("/activity").json()
@@ -71,11 +92,21 @@ class TestActivity:
         assert response.get("name") == new_data['name']
         assert response.get("client_id") == activity.client_id
 
-    def test_put_activity_not_found(self, client: TestClient):
+    def test_put_activity_client_not_found(self, client: TestClient, activity: ActivityDB):
+        "Testa a atualização de uma activity para um client que não existe"
+        new_data = {
+            "name": activity.name,
+            "client_id": -1,
+            "status": activity.status
+        }
+        response = client.put(f"/activity/{activity.id}", json=new_data)
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_put_activity_not_found(self, client: TestClient, client_instance: ClientDB):
         "Testa a atualização de uma activity que não existe"
         new_data = {
             "name": "NEW",
-            "client_id": 1,
+            "client_id": client_instance.id,
             "status": "NEW"
         }
         response = client.put(f"/activity/{-1}", json=new_data)

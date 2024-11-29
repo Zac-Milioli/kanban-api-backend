@@ -18,6 +18,25 @@ class TestClientInstance:
         assert response.json().get("name") == test_client.get("name")
         assert response.json().get("project_id") == project.id
 
+    def test_create_client_project_not_found(self, client: TestClient):
+        "Testa a criação de um client"
+        test_client = {
+            "name": "testClient",
+            "project_id": -1
+        }
+        response = client.post("/client", json=test_client)
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_create_more_client(self, client: TestClient, client_instance: ClientDB):
+        "Testa a criação de um client novo"
+        test_client = {
+            "name": "testClient NEW",
+            "project_id": client_instance.project_id
+        }
+        response = client.post("/client", json=test_client)
+        assert response.status_code == HTTPStatus.CREATED
+        assert response.json().get('id') == client_instance.id+1
+
     def test_get_all_client(self, client: TestClient):
         "Testa o retorno dos client"
         response = client.get("/client").json()
@@ -55,11 +74,20 @@ class TestClientInstance:
         assert response.get("name") == new_data['name']
         assert response.get("project_id") == client_instance.project_id
 
-    def test_put_client_not_found(self, client: TestClient):
+    def test_put_client_project_not_found(self, client: TestClient, client_instance: ClientDB):
+        "Testa a atualização de um client em um projeto que não existe"
+        new_data = {
+            "name": "NEW",
+            "project_id": -1
+        }
+        response = client.put(f"/client/{client_instance.id}", json=new_data)
+        assert response.status_code == HTTPStatus.NOT_FOUND
+    
+    def test_put_client_not_found(self, client: TestClient, project: ProjectDB):
         "Testa a atualização de um client que não existe"
         new_data = {
             "name": "NEW",
-            "project_id": 1
+            "project_id": project.id
         }
         response = client.put(f"/client/{-1}", json=new_data)
         assert response.status_code == HTTPStatus.NOT_FOUND
