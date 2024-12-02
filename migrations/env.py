@@ -4,11 +4,8 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-
+import src.models
 from src.models.table_registry import table_registry
-from src.models.project_model import ProjectModel
-from src.models.client_model import ClientModel
-from src.models.activity_model import ActivityModel
 from src.settings import Settings
 
 # this is the Alembic Config object, which provides
