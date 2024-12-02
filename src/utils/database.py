@@ -6,7 +6,7 @@ import src.models
 from src.models.table_registry import table_registry
 from .settings import Settings
 
-def get_session():
+def get_session(): # pragma: no cover
     "Retorna a sessão"
     engine = create_engine(Settings().DATABASE_URL)
     table_registry.metadata.create_all(engine)

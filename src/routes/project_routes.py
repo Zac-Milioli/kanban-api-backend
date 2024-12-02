@@ -2,55 +2,66 @@
 
 from datetime import datetime
 from http import HTTPStatus
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 from db.database import project_database
 from src.schemas.project_schema import ProjectSchema, ProjectDB
+from src.utils.database import get_session
+from src.models.project_model import ProjectModel
 
 router = APIRouter(prefix="/project", tags=['Project'])
 
 @router.get("/", status_code=HTTPStatus.OK, response_model=list[ProjectDB] | ProjectDB)
-def get_project(project_id: int | None = None):
+def get_project(project_id: int | None = None, session: Session = Depends(get_session)):
     "Buscar project ou lista de project"
     if project_id:
-        if project_id not in project_database:
-            raise HTTPException(
-                HTTPStatus.NOT_FOUND, detail=f"project of id {project_id} not found"
-                )
-        return project_database[project_id]
-    return list(project_database.values())
+        project = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
+        if not project:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="project not found")
+        return project
+
+    project = session.scalars(select(ProjectModel))
+    return project
 
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ProjectDB)
-def post_project(q: ProjectSchema):
+def post_project(q: ProjectSchema, session: Session = Depends(get_session)):
     "Salvar project"
-    if len(project_database) == 0:
-        new_id = 1
-    else:
-        new_id = max(project_database)+1
-    register = ProjectDB(
-        id=new_id, created_at=datetime.now(),
-        updated_at=datetime.now(), **q.model_dump()
-        )
-    project_database[new_id] = register
-    return register
+    project = session.scalar(select(ProjectModel).where(ProjectModel.name == q.name))
+
+    if project:
+        raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="project already exists")
+
+    project = ProjectModel(**q.model_dump())
+
+    session.add(project)
+    session.commit()
+    session.refresh(project)
+
+    return project
 
 @router.put("/{project_id}", status_code=HTTPStatus.OK, response_model=ProjectDB)
-def put_project(project_id: int, q: ProjectSchema):
+def put_project(project_id: int, q: ProjectSchema, session: Session = Depends(get_session)):
     "Modificar project"
-    if project_id not in project_database:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
-    project = project_database[project_id].model_dump()
-    registry = ProjectDB(
-        id=project_id, created_at=project['created_at'],
-        updated_at=datetime.now(), **q.model_dump()
-        )
-    project_database[project_id] = registry
-    return registry
+    project_db = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
+    if not project_db:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='project not found')
+
+    project_db.name = q.name
+    project_db.status = q.status
+
+    session.commit()
+    session.refresh(project_db)
+
+    return project_db
+
 
 @router.delete("/{project_id}", status_code=HTTPStatus.OK)
-def delete_project(project_id: int):
+def delete_project(project_id: int, session: Session = Depends(get_session)):
     "Excluir project"
-    if project_id not in project_database:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
-    project = project_database[project_id]
-    del project_database[project_id]
-    return project
+    project_db = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
+    if not project_db:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='project not found')
+    session.delete(project_db)
+    session.commit()
+    return project_db
