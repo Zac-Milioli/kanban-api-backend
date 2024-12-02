@@ -3,6 +3,10 @@
 from datetime import datetime
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from src.models.project_model import table_registry
+from src.settings import Settings
 from db.database import project_database, client_database, activity_database
 from src.schemas.project_schema import ProjectDB
 from src.schemas.client_schema import ClientDB
@@ -56,3 +60,14 @@ def activity(client_instance: ClientDB):
     activity_database[1] = activity_db
     yield activity_db
     activity_database.clear()
+
+@pytest.fixture()
+def session():
+    "Inicia uma sessão de testes"
+    engine = create_engine(Settings().DATABASE_URL)
+    table_registry.metadata.create_all(engine)
+
+    with Session(engine) as session_connection:
+        yield session_connection
+
+    table_registry.metadata.drop_all(engine)
