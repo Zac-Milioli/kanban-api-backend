@@ -25,7 +25,7 @@ jobs:
 
     - name: Run tests
       env:
-        DATABASE_URL: ${{ DATABASE_URL }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
       run: pytest --cov=./ --cov-report=html
 
     - name: Upload coverage report
