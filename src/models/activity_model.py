@@ -12,7 +12,8 @@ class ActivityModel:
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     client_id: Mapped[int] = mapped_column(ForeignKey('client.id'), init=True)
     name: Mapped[str] = mapped_column(init=True, unique=True)
-    description: Mapped[str] = mapped_column(init=True, nullable=True)
+    status: Mapped[str] = mapped_column(init=True)
+    description: Mapped[str] = mapped_column(init=True, nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(init=False, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(init=False,
                                                     server_default=func.now(), onupdate=func.now())

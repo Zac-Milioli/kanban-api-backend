@@ -1,18 +1,16 @@
 "Rotas para project"
 
-from datetime import datetime
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from db.database import project_database
 from src.schemas.project_schema import ProjectSchema, ProjectDB
 from src.utils.database import get_session
 from src.models.project_model import ProjectModel
 
 router = APIRouter(prefix="/project", tags=['Project'])
 
-@router.get("/", status_code=HTTPStatus.OK, response_model=list[ProjectDB] | ProjectDB | None)
+@router.get("/", status_code=HTTPStatus.OK, response_model=list[ProjectDB] | ProjectDB)
 def get_project(project_id: int | None = None, session: Session = Depends(get_session)):
     "Buscar project ou lista de project"
     if project_id:

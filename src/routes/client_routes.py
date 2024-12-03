@@ -1,6 +1,5 @@
 "Rotas para client"
 
-from datetime import datetime
 from http import HTTPStatus
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
@@ -8,25 +7,24 @@ from sqlalchemy import select
 from src.schemas.client_schema import ClientDB, ClientSchema
 from src.models.client_model import ClientModel
 from src.models.project_model import ProjectModel
-from db.database import client_database, project_database
 from src.utils.database import get_session
 
 router = APIRouter(prefix="/client", tags=['Client'])
 
-@router.get("/", status_code=HTTPStatus.OK, response_model=list[ClientDB] | ClientDB | None)
+@router.get("/", status_code=HTTPStatus.OK, response_model=list[ClientDB] | ClientDB)
 def get_client(client_id: int | None = None, project_id: int | None = None,
                 session: Session = Depends(get_session)):
     "Buscar client ou lista de client"
     if client_id:
         client_db = session.scalar(select(ClientModel).where(ClientModel.id == client_id))
         if not client_db:
-            raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="client not found")
         return client_db
 
     if project_id:
         project_db = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
         if not project_db:
-            raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="project not found")
         project_clients_db = session.scalars(
             select(ClientModel).where(ClientModel.project_id == project_id)
             )
@@ -42,7 +40,7 @@ def post_client(q: ClientSchema, session: Session = Depends(get_session)):
 
     project_db = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
     if not project_db:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="project not found")
 
     client_db = session.scalar(select(ClientModel).where(ClientModel.name == q.name))
     if client_db:
@@ -62,11 +60,11 @@ def put_client(client_id: int, q: ClientSchema, session: Session = Depends(get_s
 
     project_db = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
     if not project_db:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="project not found")
 
     client_db = session.scalar(select(ClientModel).where(ClientModel.id == client_id))
     if not client_db:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="client not found")
 
     if client_db.name != q.name:
         client_same_name = session.scalar(select(ClientModel).where(ClientModel.name == q.name))
@@ -86,7 +84,7 @@ def delete_client(client_id: int, session: Session = Depends(get_session)):
     "Excluir client"
     client_db = session.scalar(select(ClientModel).where(ClientModel.id == client_id))
     if not client_db:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="client not found")
     session.delete(client_db)
     session.commit()
     return client_db

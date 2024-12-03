@@ -10,7 +10,8 @@ class TestActivityModel:
         activity_name = "testActivityModel"
         activity_description = None
         activity_model = ActivityModel(name=activity_name, client_id=1,
-                                        description=activity_description)
+                                        description=activity_description,
+                                        status="testStatus")
 
         session.add(activity_model)
         session.commit()

@@ -11,7 +11,6 @@ from src.models.project_model import ProjectModel
 from src.models.client_model import ClientModel
 from src.models.activity_model import ActivityModel
 from src.utils.settings import Settings
-from db.database import project_database, client_database, activity_database
 from src.utils.database import get_session
 from main import app
 

@@ -7,7 +7,6 @@ import uvicorn
 from src.routes.activity_routes import router as activity_router
 from src.routes.client_routes import router as client_router
 from src.routes.project_routes import router as project_router
-from db.database import client_database, activity_database, project_database
 
 PART1 = "As **activity dependem** da existência de um **client** para serem criadas. "
 PART2 = "Os **client dependem** de um **project**"
@@ -15,14 +14,14 @@ PART2 = "Os **client dependem** de um **project**"
 app = FastAPI(title="Kanban Backend",
             description=PART1+PART2)
 
-@app.get("/getall", tags=["Get all data"], status_code=HTTPStatus.OK)
-def get_all():
-    "Retorna o banco completo"
-    return {
-            "Project": list(project_database.values()),
-            "Client": list(client_database.values()),
-            "Activity": list(activity_database.values())
-            }
+# @app.get("/getall", tags=["Get all data"], status_code=HTTPStatus.OK)
+# def get_all():
+#     "Retorna o banco completo"
+#     return {
+#             "Project": list(project_database.values()),
+#             "Client": list(client_database.values()),
+#             "Activity": list(activity_database.values())
+#             }
 
 app.include_router(project_router)
 app.include_router(client_router)
