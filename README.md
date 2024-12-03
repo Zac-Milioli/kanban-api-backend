@@ -1,8 +1,7 @@
 # Backend Kanban API Remake
 Backend do Kanban refeito para adotar melhores práticas de desenvolvimento e DevOps
 
-O frontend adaptado que funciona com este backend pode ser encontrado em
-> https://github.com/zac-milioli/kanban-frontend
+O frontend adaptado que funciona com este backend pode ser encontrado [aqui](https://github.com/zac-milioli/kanban-frontend/releases)
 
 # Download e Instalação
 As versões disponíveis para baixar encontram-se em [releases](https://github.com/Zac-Milioli/kanban-api-backend/releases)
