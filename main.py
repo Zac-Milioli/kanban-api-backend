@@ -1,6 +1,5 @@
 "Arquivo principal do sistema"
 
-from http import HTTPStatus
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -12,15 +11,6 @@ PART1 = "As **activity dependem** da existência de um **client** para serem cri
 PART2 = "Os **client dependem** de um **project**"
 
 app = FastAPI(title="Kanban Backend", description=PART1 + PART2)
-
-# @app.get("/getall", tags=["Get all data"], status_code=HTTPStatus.OK)
-# def get_all():
-#     "Retorna o banco completo"
-#     return {
-#             "Project": list(project_database.values()),
-#             "Client": list(client_database.values()),
-#             "Activity": list(activity_database.values())
-#             }
 
 app.include_router(project_router)
 app.include_router(client_router)
