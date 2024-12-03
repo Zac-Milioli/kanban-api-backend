@@ -2,72 +2,91 @@
 
 from datetime import datetime
 from http import HTTPStatus
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 from src.schemas.client_schema import ClientDB, ClientSchema
+from src.models.client_model import ClientModel
+from src.models.project_model import ProjectModel
 from db.database import client_database, project_database
+from src.utils.database import get_session
 
 router = APIRouter(prefix="/client", tags=['Client'])
 
-@router.get("/", status_code=HTTPStatus.OK, response_model=list[ClientDB] | ClientDB)
-def get_client(client_id: int | None = None, project_id: int | None = None):
+@router.get("/", status_code=HTTPStatus.OK, response_model=list[ClientDB] | ClientDB | None)
+def get_client(client_id: int | None = None, project_id: int | None = None,
+                session: Session = Depends(get_session)):
     "Buscar client ou lista de client"
     if client_id:
-        if client_id not in client_database:
-            raise HTTPException(
-                HTTPStatus.NOT_FOUND, detail=f"client of id {client_id} not found"
-                )
-        return client_database[client_id]
+        client_db = session.scalar(select(ClientModel).where(ClientModel.id == client_id))
+        if not client_db:
+            raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
+        return client_db
+
     if project_id:
-        if project_id not in project_database:
-            raise HTTPException(
-                HTTPStatus.NOT_FOUND, detail=f"project of id {project_id} not found"
-                )
-        return [
-            client
-            for client in client_database.values()
-            if client.project_id == project_id
-            ]
-    return list(client_database.values())
+        project_db = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
+        if not project_db:
+            raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
+        project_clients_db = session.scalars(
+            select(ClientModel).where(ClientModel.project_id == project_id)
+            )
+        return project_clients_db
+
+    clients_db = session.scalars(select(ClientModel))
+    return clients_db
 
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ClientDB)
-def post_client(q: ClientSchema):
+def post_client(q: ClientSchema, session: Session = Depends(get_session)):
     "Salvar client"
     project_id = q.model_dump()['project_id']
-    if project_id not in project_database:
+
+    project_db = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
+    if not project_db:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
-    if len(client_database) == 0:
-        new_id = 1
-    else:
-        new_id = max(client_database)+1
-    register = ClientDB(
-        id=new_id, created_at=datetime.now(),
-        updated_at=datetime.now(), **q.model_dump()
-        )
-    client_database[new_id] = register
-    return register
+
+    client_db = session.scalar(select(ClientModel).where(ClientModel.name == q.name))
+    if client_db:
+        raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="client already exists")
+
+    client_db = ClientModel(**q.model_dump())
+
+    session.add(client_db)
+    session.commit()
+    session.refresh(client_db)
+    return client_db
 
 @router.put("/{client_id}", status_code=HTTPStatus.OK, response_model=ClientDB)
-def put_client(client_id: int, q: ClientSchema):
+def put_client(client_id: int, q: ClientSchema, session: Session = Depends(get_session)):
     "Modificar client"
     project_id = q.model_dump()['project_id']
-    if project_id not in project_database:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
-    if client_id not in client_database:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail="id not found")
 
-    client = client_database[client_id].model_dump()
-    registry = ClientDB(
-        id=client_id, created_at=client['created_at'],
-        updated_at=datetime.now(), **q.model_dump()
-        )
-    client_database[client_id] = registry
-    return registry
+    project_db = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
+    if not project_db:
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail="project not found")
+
+    client_db = session.scalar(select(ClientModel).where(ClientModel.id == client_id))
+    if not client_db:
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
+
+    if client_db.name != q.name:
+        client_same_name = session.scalar(select(ClientModel).where(ClientModel.name == q.name))
+        if client_same_name:
+            raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="client already exists")
+        client_db.name = q.name
+
+    client_db.project_id = q.project_id
+
+    session.commit()
+    session.refresh(client_db)
+
+    return client_db
 
 @router.delete("/{client_id}", status_code=HTTPStatus.OK)
-def delete_client(client_id: int):
+def delete_client(client_id: int, session: Session = Depends(get_session)):
     "Excluir client"
-    if client_id not in client_database:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail="id not found")
-    client = client_database[client_id]
-    del client_database[client_id]
-    return client
+    client_db = session.scalar(select(ClientModel).where(ClientModel.id == client_id))
+    if not client_db:
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail="client not found")
+    session.delete(client_db)
+    session.commit()
+    return client_db

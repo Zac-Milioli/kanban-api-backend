@@ -12,33 +12,32 @@ from src.models.project_model import ProjectModel
 
 router = APIRouter(prefix="/project", tags=['Project'])
 
-@router.get("/", status_code=HTTPStatus.OK, response_model=list[ProjectDB] | ProjectDB)
+@router.get("/", status_code=HTTPStatus.OK, response_model=list[ProjectDB] | ProjectDB | None)
 def get_project(project_id: int | None = None, session: Session = Depends(get_session)):
     "Buscar project ou lista de project"
     if project_id:
-        project = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
-        if not project:
+        project_db = session.scalar(select(ProjectModel).where(ProjectModel.id == project_id))
+        if not project_db:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="project not found")
-        return project
+        return project_db
 
-    project = session.scalars(select(ProjectModel))
-    return project
+    project_db = session.scalars(select(ProjectModel))
+    return project_db
 
 @router.post("/", status_code=HTTPStatus.CREATED, response_model=ProjectDB)
 def post_project(q: ProjectSchema, session: Session = Depends(get_session)):
     "Salvar project"
-    project = session.scalar(select(ProjectModel).where(ProjectModel.name == q.name))
-
-    if project:
+    project_db = session.scalar(select(ProjectModel).where(ProjectModel.name == q.name))
+    if project_db:
         raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="project already exists")
 
-    project = ProjectModel(**q.model_dump())
+    project_db = ProjectModel(**q.model_dump())
 
-    session.add(project)
+    session.add(project_db)
     session.commit()
-    session.refresh(project)
+    session.refresh(project_db)
 
-    return project
+    return project_db
 
 @router.put("/{project_id}", status_code=HTTPStatus.OK, response_model=ProjectDB)
 def put_project(project_id: int, q: ProjectSchema, session: Session = Depends(get_session)):
@@ -47,7 +46,12 @@ def put_project(project_id: int, q: ProjectSchema, session: Session = Depends(ge
     if not project_db:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='project not found')
 
-    project_db.name = q.name
+    if project_db.name != q.name:
+        project_same_name = session.scalar(select(ProjectModel).where(ProjectModel.name == q.name))
+        if project_same_name:
+            raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="project already exists")
+        project_db.name = q.name
+
     project_db.status = q.status
 
     session.commit()
