@@ -14,14 +14,15 @@ from src.utils.settings import Settings
 from src.utils.database import get_session
 from main import app
 
+
 @pytest.fixture(scope="function")
 def session():
     "Inicia uma sessão de testes"
     engine = create_engine(
         Settings().TEST_DATABASE_URL,
         connect_args={"check_same_thread": False},
-        poolclass=StaticPool
-        )
+        poolclass=StaticPool,
+    )
     table_registry.metadata.create_all(engine)
 
     with Session(engine) as session_connection:
@@ -29,9 +30,11 @@ def session():
 
     table_registry.metadata.drop_all(engine)
 
+
 @pytest.fixture()
 def client(session: Session):
     "Retorna o cliente de testes"
+
     def get_session_override():
         return session
 
@@ -41,17 +44,19 @@ def client(session: Session):
 
     app.dependency_overrides.clear()
 
+
 @pytest.fixture()
 def project(session: Session):
     "Cria e retorna um project diretamente no banco"
     project_db = ProjectModel(
         name="testProject",
         status="testStatus",
-        )
+    )
     session.add(project_db)
     session.commit()
     session.refresh(project_db)
     return project_db
+
 
 @pytest.fixture()
 def client_instance(project: ProjectModel, session: Session):
@@ -59,11 +64,12 @@ def client_instance(project: ProjectModel, session: Session):
     client_db = ClientModel(
         name="testClient",
         project_id=project.id,
-        )
+    )
     session.add(client_db)
     session.commit()
     session.refresh(client_db)
     return client_db
+
 
 @pytest.fixture()
 def activity(client_instance: ClientModel, session: Session):
@@ -72,7 +78,7 @@ def activity(client_instance: ClientModel, session: Session):
         name="testActivity",
         client_id=client_instance.id,
         status="testStatus",
-        )
+    )
     session.add(activity_db)
     session.commit()
     session.refresh(activity_db)

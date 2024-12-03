@@ -9,12 +9,13 @@ from src.models.project_model import ProjectModel
 
 class TestActivity:
     "Objeto de testes para activity"
+
     def test_create_activity(self, client: TestClient, client_instance: ClientModel):
         "Testa a criação de um activity"
         test_activity = {
             "name": "testClient",
             "client_id": client_instance.id,
-            "status": "testStatus"
+            "status": "testStatus",
         }
         response = client.post("/activity", json=test_activity)
         assert response.status_code == HTTPStatus.CREATED
@@ -23,11 +24,7 @@ class TestActivity:
 
     def test_create_activity_no_client(self, client: TestClient):
         "Testa a criação de um activity sem um client"
-        test_activity = {
-            "name": "testClient",
-            "client_id": -1,
-            "status": "testStatus"
-        }
+        test_activity = {"name": "testClient", "client_id": -1, "status": "testStatus"}
         response = client.post("/activity", json=test_activity)
         assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -36,11 +33,11 @@ class TestActivity:
         test_activity = {
             "name": "testClient NEW",
             "client_id": activity.client_id,
-            "status": "testStatus"
+            "status": "testStatus",
         }
         response = client.post("/activity", json=test_activity)
         assert response.status_code == HTTPStatus.CREATED
-        assert response.json().get("id") == activity.id+1
+        assert response.json().get("id") == activity.id + 1
 
     def test_get_all_activity(self, client: TestClient):
         "Testa o retorno das activity"
@@ -57,8 +54,9 @@ class TestActivity:
         response = client.get("/activity/", params={"activity_id": -1})
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_get_activity_from_client(self, client: TestClient, activity: ActivityModel,
-                                        client_instance: ClientModel):
+    def test_get_activity_from_client(
+        self, client: TestClient, activity: ActivityModel, client_instance: ClientModel
+    ):
         "Testa o retorno das activity de um client"
         response = client.get("/activity/", params={"client_id": activity.client_id})
         assert response.status_code == HTTPStatus.OK
@@ -69,8 +67,9 @@ class TestActivity:
         response = client.get("/activity/", params={"client_id": -1})
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_get_activity_from_project(self, client: TestClient, activity: ActivityModel,
-                                        project: ProjectModel):
+    def test_get_activity_from_project(
+        self, client: TestClient, activity: ActivityModel, project: ProjectModel
+    ):
         "Testa o retorno das activity de um project"
         response = client.get("/activity/", params={"project_id": project.id})
         assert response.status_code == HTTPStatus.OK
@@ -83,32 +82,24 @@ class TestActivity:
 
     def test_put_activity(self, client: TestClient, activity: ActivityModel):
         "Testa a atualização de uma activity"
-        new_data = {
-            "name": "NEW",
-            "client_id": activity.client_id,
-            "status": "NEW"
-        }
+        new_data = {"name": "NEW", "client_id": activity.client_id, "status": "NEW"}
         response = client.put(f"/activity/{activity.id}", json=new_data).json()
-        assert response.get("name") == new_data['name']
+        assert response.get("name") == new_data["name"]
         assert response.get("client_id") == activity.client_id
 
-    def test_put_activity_client_not_found(self, client: TestClient, activity: ActivityModel):
+    def test_put_activity_client_not_found(
+        self, client: TestClient, activity: ActivityModel
+    ):
         "Testa a atualização de uma activity para um client que não existe"
-        new_data = {
-            "name": activity.name,
-            "client_id": -1,
-            "status": activity.status
-        }
+        new_data = {"name": activity.name, "client_id": -1, "status": activity.status}
         response = client.put(f"/activity/{activity.id}", json=new_data)
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_put_activity_not_found(self, client: TestClient, client_instance: ClientModel):
+    def test_put_activity_not_found(
+        self, client: TestClient, client_instance: ClientModel
+    ):
         "Testa a atualização de uma activity que não existe"
-        new_data = {
-            "name": "NEW",
-            "client_id": client_instance.id,
-            "status": "NEW"
-        }
+        new_data = {"name": "NEW", "client_id": client_instance.id, "status": "NEW"}
         response = client.put(f"/activity/{-1}", json=new_data)
         assert response.status_code == HTTPStatus.NOT_FOUND
 

@@ -11,8 +11,7 @@ from src.routes.project_routes import router as project_router
 PART1 = "As **activity dependem** da existência de um **client** para serem criadas. "
 PART2 = "Os **client dependem** de um **project**"
 
-app = FastAPI(title="Kanban Backend",
-            description=PART1+PART2)
+app = FastAPI(title="Kanban Backend", description=PART1 + PART2)
 
 # @app.get("/getall", tags=["Get all data"], status_code=HTTPStatus.OK)
 # def get_all():
@@ -27,13 +26,9 @@ app.include_router(project_router)
 app.include_router(client_router)
 app.include_router(activity_router)
 
-origins = [
-    "http://localhost",
-    "http://localhost:8000",
-    "http://localhost:8080"
-]
+origins = ["http://localhost", "http://localhost:8000", "http://localhost:8080"]
 
-if __name__ == "__main__": # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,

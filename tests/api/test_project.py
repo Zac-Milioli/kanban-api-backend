@@ -4,27 +4,23 @@ from http import HTTPStatus
 from fastapi.testclient import TestClient
 from src.schemas.project_schema import ProjectDB
 
+
 class TestProject:
     "Objeto de testes para project"
+
     def test_create_project(self, client: TestClient):
         "Testa a criação de um project"
-        project = {
-            "name": "testProject",
-            "status": "testStatus"
-        }
+        project = {"name": "testProject", "status": "testStatus"}
         response = client.post("/project", json=project)
         assert response.status_code == HTTPStatus.CREATED
         assert response.json().get("id")
 
     def test_create_more_project(self, client: TestClient, project: ProjectDB):
         "Testa a criação de um project novo"
-        new_project = {
-            "name": "testProject NEW",
-            "status": "testStatus NEW"
-        }
+        new_project = {"name": "testProject NEW", "status": "testStatus NEW"}
         response = client.post("/project", json=new_project)
         assert response.status_code == HTTPStatus.CREATED
-        assert response.json().get("id") == project.id+1
+        assert response.json().get("id") == project.id + 1
 
     def test_get_all_project(self, client: TestClient):
         "Testa o retorno dos project"
@@ -44,20 +40,14 @@ class TestProject:
 
     def test_put_project(self, client: TestClient, project: ProjectDB):
         "Testa a atualização de um project"
-        new_data = {
-            "name": "NEW",
-            "status": "NEW"
-        }
+        new_data = {"name": "NEW", "status": "NEW"}
         response = client.put(f"/project/{project.id}", json=new_data).json()
-        assert response.get("name") == new_data['name']
-        assert response.get("status") == new_data['status']
+        assert response.get("name") == new_data["name"]
+        assert response.get("status") == new_data["status"]
 
     def test_put_project_not_found(self, client: TestClient):
         "Testa a atualização de um project que não existe"
-        new_data = {
-            "name": "NEW",
-            "status": "NEW"
-        }
+        new_data = {"name": "NEW", "status": "NEW"}
         response = client.put(f"/project/{-1}", json=new_data)
         assert response.status_code == HTTPStatus.NOT_FOUND
 

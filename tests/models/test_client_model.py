@@ -3,8 +3,10 @@
 from sqlalchemy.orm import Session
 from src.models.client_model import ClientModel
 
+
 class TestClientModel:
     "Classe para testes de ClientModel"
+
     def test_create_client_model(self, session: Session):
         "Testa se o objeto do model é criado corretamente"
         client_name = "testClientModel"

@@ -3,15 +3,20 @@
 from sqlalchemy.orm import Session
 from src.models.activity_model import ActivityModel
 
+
 class TestActivityModel:
     "Classe para testes de ActivityModel"
+
     def test_create_client_model(self, session: Session):
         "Testa se o objeto do model é criado corretamente"
         activity_name = "testActivityModel"
         activity_description = None
-        activity_model = ActivityModel(name=activity_name, client_id=1,
-                                        description=activity_description,
-                                        status="testStatus")
+        activity_model = ActivityModel(
+            name=activity_name,
+            client_id=1,
+            description=activity_description,
+            status="testStatus",
+        )
 
         session.add(activity_model)
         session.commit()
