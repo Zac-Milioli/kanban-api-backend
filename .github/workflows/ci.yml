@@ -25,6 +25,7 @@ jobs:
 
     - name: Run tests
       env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
         TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       run: pytest --cov=./ --cov-report=html
 
