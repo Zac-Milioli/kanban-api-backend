@@ -4,6 +4,9 @@ Backend do Kanban refeito para adotar melhores práticas de desenvolvimento e De
 O frontend adaptado que funciona com este backend pode ser encontrado em
 > https://github.com/zac-milioli/kanban-frontend
 
+# Download e Instalação
+As versões disponíveis para baixar encontram-se em [releases](https://github.com/Zac-Milioli/kanban-api-backend/releases)
+
 ## Setup / Instalação
 ```
 pip install -r requirements.txt
